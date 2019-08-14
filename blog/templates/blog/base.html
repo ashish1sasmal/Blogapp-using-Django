@@ -10,8 +10,8 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{% static  'blog/css/main.css'%}">
-
-    {% if title %}
+    <link href="https://fonts.googleapis.com/css?family=Acme&display=swap" rel="stylesheet">
+      {% if title %}
         <title>Django Blog-{{title}}</title>
     {% else %}
         <title>Django-Blog</title>
@@ -23,7 +23,7 @@
         <header class="site-header">
           <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
             <div class="container">
-              <a class="navbar-brand mr-4" href="/">Django Blog</a>
+              <a class="navbar-brand mr-4" href="/" style="font-family: 'Acme', sans-serif;">WingMan</a>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
               </button>
@@ -34,8 +34,14 @@
                 </div>
                 <!-- Navbar Right Side -->
                 <div class="navbar-nav">
-                  <a class="nav-item nav-link" href="#">Login</a>
-                  <a class="nav-item nav-link" href="register">Register</a>
+                  {% if user.is_authenticated %}
+                  <a class="nav-item nav-link" href="{% url 'profile' %}">Profile</a>
+                  <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
+                  {% else %}
+                  <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
+                  <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+
+                  {% endif %}
                 </div>
               </div>
             </div>
