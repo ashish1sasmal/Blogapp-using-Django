@@ -10,7 +10,17 @@
             <p class="text-secondary">{{user.email}}</p>
           </div>
         </div>
-        <!-- FORM HERE -->
+        <h2>Profile Info</h2>
+              <form  method="POST" action="" enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  {{ u_form|crispy }}
+                  {{ p_form|crispy }}
+                  <input type="submit" name="" value="Update" class="btn btn-outline-info">
+                </form>
+
+
+
       </div>
 
 {% endblock content %}
