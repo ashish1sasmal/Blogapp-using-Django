@@ -3,23 +3,36 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm,UserForm,UserUpdateForm,ProfileUpdateForm
-
+import requests
+from django.conf import settings
+import json
+import urllib
 
 def register(request):
     if request.method == 'POST':
         form = UserForm(data=request.POST)
         profile_form=UserRegisterForm(data=request.POST)
+        
         if form.is_valid() and profile_form.is_valid():
-            user=form.save()
-            user.save()
-            profile=profile_form.save(commit=False)
-            profile.user=user
-            if 'image' in request.FILES:
-                profile.image=request.FILES['image']
-            profile.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Your account has been created! You are now able to log in')
-            return redirect('login')
+            recaptcha_response = request.POST.get('g-recaptcha-response')
+            data = {
+                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+                'response': recaptcha_response
+            }
+            r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+            result = r.json()
+            print(result['success'])
+            if result['success']:
+                user=form.save()
+                user.save()
+                profile=profile_form.save(commit=False)
+                profile.user=user
+                if 'image' in request.FILES:
+                    profile.image=request.FILES['image']
+                profile.save()
+                username = form.cleaned_data.get('username')
+                messages.success(request, f'Your account has been created! You are now able to log in')
+                return redirect('login')
     else:
         form = UserForm()
         profile_form=UserRegisterForm()
