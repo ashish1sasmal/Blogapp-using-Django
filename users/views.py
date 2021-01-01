@@ -7,12 +7,13 @@ import requests
 from django.conf import settings
 import json
 import urllib
+from .models import Profile
 
 def register(request):
     if request.method == 'POST':
         form = UserForm(data=request.POST)
         profile_form=UserRegisterForm(data=request.POST)
-        
+
         if form.is_valid() and profile_form.is_valid():
             recaptcha_response = request.POST.get('g-recaptcha-response')
             data = {
@@ -51,6 +52,8 @@ def profile(request):
             messages.success(request, f'Your account has been updated!')
             return redirect('profile')
     else:
+        profile=Profile.objects.get_or_create(user=request.user)
+
         u_form=UserUpdateForm(instance=request.user)
         p_form=ProfileUpdateForm(instance=request.user.profile)
 

@@ -1,20 +1,59 @@
 {% extends 'blog/base.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
-	
-  	<div class="content-section">
-  		<form  method="POST" action="" enctype="multipart/form-data">
-  			{% csrf_token %}
-  			{{ form|crispy }}
-        {{ profile_form|crispy }}
 
-    <script src='https://www.google.com/recaptcha/api.js'></script>
-    <div class="g-recaptcha" data-sitekey=""></div>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+<style media="screen">
+	.btn-facebook {
+    background-color: #405D9D;
+    color: #fff;
+}
+.btn-twitter {
+    background-color: #42AEEC;
+    color: #fff;
+}
+.btn-github {
+    background-color: #000000;
+    color: #fff;
+}
+
+.btn-google {
+    background-color: #ede6ec;
+    color: black;
+}
+</style>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-6">
+				<form  method="POST" action="" enctype="multipart/form-data">
+					{% csrf_token %}
+					{{ form|crispy }}
+					{{ profile_form|crispy }}
+
+			<script src='https://www.google.com/recaptcha/api.js'></script>
+			<div class="g-recaptcha" data-sitekey="6Ld5jxwaAAAAAE9oaiBstt2Cp0Sp7IK1ydSTwDGs"></div>
 
 
-  			<input type="submit" name="" value="Sign Up!" class="btn btn-outline-info">
-  		</form>
-  	</div>
+					<input type="submit" name="" value="Sign Up!" class="btn btn-outline-info">
+				</form>
+			</div>
+			<div class="col-6">
+				<h3 align="middle">Register with :</h3>
+				<a href="{% url 'social:begin' 'twitter' %}" class="btn btn-block btn-twitter"> <i class="fab fa-twitter"></i>   Register via Twitter</a>
+	<a href="{% url 'social:begin' 'facebook' %}" class="btn btn-block btn-facebook"> <i class="fab fa-facebook-f"></i>   Register via facebook</a>
+	<a href="{% url 'social:begin' 'github' %}" class="btn btn-block btn-github"> <i class="fab fa-github"></i>   Register via Github</a>
+	<a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-block btn-google"> <img width="20px" style="margin-top:7px; margin-right:8px" alt="Google sign-in"
+			src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png" />  Register via Google</a>
+
+		</div>
+
+		</div>
+
+	</div>
+
+
   	<div>
   		<small class="text-muted">Already Have An Account<a href="{% url 'login' %}" class="ml-2">Sign In</a></small>
   	</div>
