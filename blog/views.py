@@ -1,55 +1,67 @@
-from django.shortcuts import render
-from .models import Post
+from django.shortcuts import render,redirect
+
 # Create your views here.
-
-from django.views.generic import TemplateView,ListView,UpdateView,DetailView,CreateView,DeleteView
-from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
-class HomeView(ListView):
-	template_name='blog/home.html'
-	context_object_name='posts'
-	model=Post
-	ordering=['-date_posted']
-	# def get_context_data(self, **kwargs):
-	# 	d = {'posts':self.posts}
-	# 	return d
-
-class PostDetailView(DetailView):
-	model = Post
-
-class PostCreateView(LoginRequiredMixin,CreateView):
-	model=Post
-	fields=['title','content']
-
-	def form_valid(self,form):  #NOT NULL constraint failed: blog_post.author_id
-		form.instance.author=self.request.user    #saving user before creating post i.e., we are overriding it
-		return super().form_valid(form)	
-
-class PostUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
-	model=Post
-	fields=['title','content']
-
-	def form_valid(self,form):  #NOT NULL constraint failed: blog_post.author_id
-		form.instance.author=self.request.user    #saving user before creating post i.e., we are overriding it
-		return super().form_valid(form)	
-
-	def test_func(self):
-		post=self.get_object()
-		if self.request.user==post.author:
-			return True
-		return False
-
-class PostDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
-	model = Post
-
-	def test_func(self):
-		post=self.get_object()
-		if self.request.user==post.author:
-			return True
-		return False
-
-	success_url=reverse_lazy('blog-home')
+from .models import Blog,Comment
+import uuid
+from .s3 import s3_service
+from django.contrib import messages
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 
-class AboutView(TemplateView):
-	template_name='blog/about.html'
+def home(request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            content = request.POST.get("content")
+            blogpic = request.FILES.get("blogpic",None)
+            blg = Blog(content=content,user=request.user)
+            blg.save(file=blogpic)
+            messages.success(request,"Post uploaded successfully")
+            return redirect("blog:home")
+        else:
+            allblogs = Blog.objects.all()
+            content =  {}
+            content["blogs"] = allblogs
+            return render(request,"blog/home2.html",content)
+    else:
+        return render(request,"blog/landing_page.html")
+
+@login_required
+def like(request):
+    id = request.GET.get("id")
+    blg = Blog.objects.get(id=id)
+    if request.user in blg.likes.all():
+        print(request.user,"removed")
+        blg.likes.remove(request.user)
+    else:
+        print(request.user,"added")
+        blg.likes.add(request.user)
+    return JsonResponse({"msg":"Liked"},status=200)
+
+from rest_framework import mixins
+from rest_framework import generics
+from .serializers import CommentSerializer
+
+class CommentCBV(mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    generics.GenericAPIView,LoginRequiredMixin):
+
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    def get(self,request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self,request, *args, **kwargs):
+        print(request.data,"Hi")
+        return self.create(request, *args, **kwargs)
+
+@login_required
+def editPost(request,id):
+    blg = Blog.objects.get(id = id)
+    blg.content = request.POST.get("editcontent")
+    blg.save()
+    messages.success(request,"Post edited successfully.")
+    return redirect("blog:home")

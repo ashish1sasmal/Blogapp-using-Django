@@ -1,64 +1,341 @@
 {% extends 'blog/base.html' %}
-{% load crispy_forms_tags %}
+{% load static %}
 {% block content %}
 
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
-
 <style media="screen">
-	.btn-facebook {
-    background-color: #405D9D;
-    color: #fff;
-}
-.btn-twitter {
-    background-color: #42AEEC;
-    color: #fff;
-}
-.btn-github {
-    background-color: #000000;
-    color: #fff;
+    .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
 }
 
-.btn-google {
-    background-color: #ede6ec;
-    color: black;
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 </style>
 
-	<div class="container">
-		<div class="row">
-			<div class="col-6">
-				<form  method="POST" action="" enctype="multipart/form-data">
-					{% csrf_token %}
-					{{ form|crispy }}
-					{{ profile_form|crispy }}
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="row">
+              <div class="col-6">
+                  <video id="player" width="400" autoplay></video>
 
-			<script src='https://www.google.com/recaptcha/api.js'></script>
-			<div class="g-recaptcha" data-sitekey="6Ld5jxwaAAAAAE9oaiBstt2Cp0Sp7IK1ydSTwDGs"></div>
+              </div>
+              <div class="col-6">
+                  <canvas id="canvas" width="400" height="350" ></canvas>
 
-
-					<input type="submit" name="" value="Sign Up!" class="btn btn-outline-info">
-				</form>
-			</div>
-			<div class="col-6">
-				<h3 align="middle">Register with :</h3>
-				<a href="{% url 'social:begin' 'twitter' %}" class="btn btn-block btn-twitter"> <i class="fab fa-twitter"></i>   Register via Twitter</a>
-	<a href="{% url 'social:begin' 'facebook' %}" class="btn btn-block btn-facebook"> <i class="fab fa-facebook-f"></i>   Register via facebook</a>
-	<a href="{% url 'social:begin' 'github' %}" class="btn btn-block btn-github"> <i class="fab fa-github"></i>   Register via Github</a>
-	<a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-block btn-google"> <img width="20px" style="margin-top:7px; margin-right:8px" alt="Google sign-in"
-			src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png" />  Register via Google</a>
-
-		</div>
-
-		</div>
-
-	</div>
+              </div>
+          </div>
 
 
-  	<div>
-  		<small class="text-muted">Already Have An Account<a href="{% url 'login' %}" class="ml-2">Sign In</a></small>
-  	</div>
+        <button id="capture" class="btn btn-success">Capture</button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closecap();">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<div class="container col-12 mt-3">
+    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Sign In</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Sign Up</a>
+  </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+      <form class="needs-validation" onsubmit="return loginsubmit()" action="{% url 'users:login' %}" novalidate="" method="POST">
+          {% csrf_token %}
+      <div class="row">
 
+          <div class="card col-5 mr-3">
+              <div class="card-body">
+                  <h2 class="h4 mb-1">Sign in</h2>
+                  <div class="d-sm-flex align-items-center py-3">
+                      <h3 class="h6 font-weight-semibold opacity-70 mb-3 mb-sm-2 mr-sm-3">With social account:</h3>
+                      <div>
+                          <a class="social-btn sb-facebook mr-2 mb-2" href="#" data-toggle="tooltip" title="" data-original-title="Sign in with Facebook">
+                              <i class="fab fa-facebook-f"></i>
+                          </a>
+                          <a class="social-btn sb-twitter mr-2 mb-2" href="#" data-toggle="tooltip" title="" data-original-title="Sign in with Twitter">
+                              <i class="fab fa-twitter"></i>
+                          </a>
+                          <a class="social-btn sb-linkedin mr-2 mb-2" href="#" data-toggle="tooltip" title="" data-original-title="Sign in with Google">
+                              <i class="fab fa-google"></i>
+                          </a>
+                      </div>
+                  </div>
+                  <hr>
+                  <h3 class="h6 font-weight-semibold opacity-70 pt-4 pb-2">Or using form below</h3>
+
+                          <div class="input-group form-group">
+                              <div class="input-group-prepend"><span class="input-group-text"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span></div>
+                              <input class="form-control" name="email" type="email" placeholder="Email" required="">
+                              <div class="invalid-feedback">Please enter valid email address!</div>
+                          </div>
+                          <div class="input-group form-group">
+                              <div class="input-group-prepend"><span class="input-group-text"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-lock"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span></div>
+                              <input class="form-control" name="password" type="password" placeholder="Password" required="">
+                              <div class="invalid-feedback">Please enter valid password!</div>
+                          </div>
+                          <div class="d-flex flex-wrap justify-content-between">
+                              <div class="custom-control custom-checkbox">
+                                  <input class="custom-control-input" type="checkbox" checked="" id="remember_me">
+                                  <label class="custom-control-label" for="remember_me">Remember me</label>
+                              </div><a class="nav-link-inline font-size-sm" href="account-password-recovery.html">Forgot password?</a>
+                          </div>
+
+
+              </div>
+          </div>
+          <div class="card col-6">
+              <div class="card-body">
+                  <label class="switch" align="center">
+                      <input type="checkbox" id="face_login" name="face_login" onchange="facelogin()">
+                      <span class="slider round"></span>
+                    </label>
+                  <div class="" align="center">
+                      <h2 class="h4 mb-1" align="center">Or using Face Login</h2>
+                      <hr>
+                        <button class="btn btn-primary mt-5" onclick="logincapture();" id="login_camera_button" type="button" disabled>Open Camera</button>
+                        <button class="btn btn-primary mt-5" id="login_camera_capture_button" type="button" disabled>Capture</button>
+                        <button class="btn btn-danger mt-5" onclick="closecap2();" id="login_camera_close_button" type="button"  style="display:none;">Close</button>
+                        <video id="player2" width="400" autoplay ></video>
+                        <canvas id="canvas2" width="400" height="350" style="display:none;"></canvas>
+                  </div>
+
+
+              </div>
+          </div>
+          <input type="text" id="logpic" name="logpic" value="" hidden>
+          <div >
+              <button class="btn btn-success" align="center" type="submit">Sign In</button>
+          </div>
+
+      </div>
+       </form>
+  </div>
+  <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+      <div class="card">
+          <div class="card-body">
+              <h2 class="h4 mb-1">No account? Sign up</h2>
+              <p class="text-muted mb-4">Registration takes less than a minute </p>
+              <hr>
+              <form method="POST" onsubmit="return makeSearch()" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="row">
+                      <div class="col-sm-6">
+                          <div class="form-group">
+                              <label for="reg-fn">First Name</label>
+                              <input class="form-control" name="first_name" type="text" required="" id="reg-fn">
+                              <div class="invalid-feedback">Please enter your first name!</div>
+                          </div>
+                      </div>
+                      <div class="col-sm-6">
+                          <div class="form-group">
+                              <label for="reg-ln">Last Name</label>
+                              <input class="form-control" type="text" name="last_name" required="" id="reg-ln">
+                              <div class="invalid-feedback">Please enter your last name!</div>
+                          </div>
+                      </div>
+                      <div class="col-sm-6">
+                          <div class="form-group">
+                              <label for="reg-email">E-mail Address</label>
+                              <input class="form-control" type="email" name="email" required="" id="reg-email">
+                              <div class="invalid-feedback">Please enter valid email address!</div>
+                          </div>
+                      </div>
+                      <div class="col-sm-6">
+                          <div class="form-group">
+                              <label for="reg-phone">Phone Number</label>
+                              <input class="form-control" type="text" name="mobile" required="" id="reg-phone">
+                              <div class="invalid-feedback">Please enter your phone number!</div>
+                          </div>
+                      </div>
+                      <div class="col-sm-6">
+                          <div class="form-group">
+                              <label for="reg-password">Password</label>
+                              <input class="form-control" type="password" name="password" required="" id="reg-password">
+                              <div class="invalid-feedback">Please enter password!</div>
+                          </div>
+                      </div>
+                      <div class="col-sm-6">
+                          <div class="form-group">
+                              <label for="reg-password-confirm">Confirm Password</label>
+                              <input class="form-control" type="password" required="" id="reg-password-confirm">
+                              <div class="invalid-feedback">Passwords do not match!</div>
+                          </div>
+                      </div>
+                  </div>
+                  <input type="text" id="regpic" name="regpic" value="" hidden>
+                  <button type="button" class="btn btn-primary" data-toggle="modal" onclick="capture();" data-target="#exampleModal">
+                    Capture
+                  </button>
+                  <div class="text-right">
+                      <button class="btn btn-primary" type="submit">Sign Up</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+</div>
+
+
+<script type="text/javascript">
+
+    function facelogin(){
+        if (document.getElementById("face_login").checked){
+            document.getElementById("login_camera_button").disabled = false;
+            document.getElementById("login_camera_capture_button").disabled = false;
+        }
+        else{
+            document.getElementById("login_camera_button").disabled = true;
+            document.getElementById("login_camera_capture_button").disabled = true;
+        }
+
+    }
+
+    function capture(){
+        const player = document.getElementById('player');
+         const canvas = document.getElementById('canvas');
+         const context = canvas.getContext('2d');
+         const captureButton = document.getElementById('capture');
+
+         const constraints = {
+           video: true,
+         };
+
+         captureButton.addEventListener('click', () => {
+           // Draw the video frame to the canvas.
+           context.drawImage(player, 0, 0, canvas.width, canvas.height);
+         });
+
+         // Attach the video stream to the video element and autoplay.
+         navigator.mediaDevices.getUserMedia(constraints)
+           .then((stream) => {
+             player.srcObject = stream;
+           });
+    }
+
+    function logincapture(){
+        document.getElementById("login_camera_button").style.display = "none";
+        const player2 = document.getElementById('player2');
+        const canvas2 = document.getElementById('canvas2');
+        const context2 = canvas2.getContext('2d');
+         const captureButton2 = document.getElementById('login_camera_capture_button');
+
+        constraints = {
+          video: true,
+        };
+
+        captureButton2.addEventListener('click', () => {
+          // Draw the video frame to the canvas.
+          context2.drawImage(player2, 0, 0, canvas2.width, canvas2.height);
+        });
+
+        // Attach the video stream to the video element and autoplay.
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then((stream) => {
+            player2.srcObject = stream;
+          });
+    }
+
+    function loginsubmit(){
+      var dataURL2 = canvas2.toDataURL('image/png');
+      // alert(dataURL2);
+       document.getElementById("logpic").value=dataURL2;
+        return true;
+    }
+
+
+
+    function closecap2(){
+        player2.style.display = "none";
+        player2.srcObject.getVideoTracks().forEach(track => track.stop());
+        document.getElementById("login_camera_close_button").style.display = "none";
+
+    }
+
+    function closecap(){
+        player.srcObject.getVideoTracks().forEach(track => track.stop());
+
+    }
+
+    function makeSearch(){
+        let p1 = document.getElementById("reg-password").value;
+        let p2 = document.getElementById("reg-password-confirm").value;
+        if (p1!=p2){
+            return false;
+        }
+        mcanvas = document.getElementById("canvas")
+      var dataURL = mcanvas.toDataURL('image/png');
+       document.getElementById("regpic").value=dataURL;
+        return true;
+    }
+</script>
 
 {% endblock content %}

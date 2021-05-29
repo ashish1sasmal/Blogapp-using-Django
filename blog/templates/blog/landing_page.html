@@ -1,0 +1,70 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% block content %}
+
+<style media="screen">
+    .carousel-item {
+      height: 65vh;
+      min-height: 350px;
+      background: no-repeat center center scroll;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+    }
+
+</style>
+
+<div class="container mt-4">
+    <header>
+      <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+          <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+          <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+          <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+        </ol>
+        <div class="carousel-inner" role="listbox">
+          <!-- Slide One - Set the background image for this slide in the line below -->
+          <div class="carousel-item active" style="background-image: url('https://images.unsplash.com/photo-1529333166437-7750a6dd5a70')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3 class="display-4">Friends</h3>
+              <p class="lead">Life is partly what we make it, and partly what it is made by the friends we choose.</p>
+            </div>
+          </div>
+          <!-- Slide Two - Set the background image for this slide in the line below -->
+          <div class="carousel-item" style="background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3 class="display-4">Secrets</h3>
+              <p class="lead">Blogging is good for your career. A well-executed blog sets you apart as an expert in your field. ~Penelope Trunk</p>
+            </div>
+          </div>
+          <!-- Slide Three - Set the background image for this slide in the line below -->
+          <div class="carousel-item" style="background-image: url('https://images.unsplash.com/photo-1515187029135-18ee286d815b')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3 class="display-4">Explore</h3>
+              <p class="lead">“Technology is best when it brings people together.”</p>
+            </div>
+          </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="sr-only">Next</span>
+            </a>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <section class="py-5">
+      <div class="container">
+        <h1 class="font-weight-light">Start Blogging</h1>
+        <p class="lead"> Made by ASHISH SASMAL</p>
+      </div>
+    </section>
+
+</div>
+
+{% endblock content %}

@@ -1,9 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Post
+from .models import Blog, Comment
 
-class PostAdmin(admin.ModelAdmin):
-	list_display=['id','title','author','date_posted']
-
-admin.site.register(Post,PostAdmin)
+admin.site.register(Blog)
+admin.site.register(Comment)

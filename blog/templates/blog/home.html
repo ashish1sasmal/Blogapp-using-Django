@@ -1,18 +1,246 @@
 {% extends 'blog/base.html' %}
 {% block content %}
-	{% for post in posts %}
-		<article class="media content-section">
-      <img class="rounded-circle article-img" src="{{post.author.profile.image.url}}">
-  <div class="media-body">
-    <div class="article-metadata">
-      <a class="mr-2" href="#">{{ post.author }}</a>
-      <small class="text-muted">{{ post.date_posted | date:"F d, Y" }}</small>
+
+<style media="screen">
+
+.widget {
+border: none;
+box-shadow: 0 2px 0 rgba(0,0,0,.07);
+-webkit-border-radius: 5px;
+-moz-border-radius: 5px;
+border-radius: 5px;
+margin-bottom: 20px;
+background: #fff;
+padding: 20px;
+display: block;
+}
+
+.widget-blog-cover {
+overflow: hidden;
+padding-top: 60%;
+}
+
+.widget-blog-cover, .widget-stat-header {
+position: relative;
+border-radius: 5px 5px 0 0;
+margin: -20px -20px 20px;
+}
+
+.animation-grow-hover, .widget-blog .widget-blog-cover img {
+transition: all .1s ease-in-out;
+}
+
+.widget-blog-cover img:hover{
+max-width: 110%;
+min-height: 110%;
+margin-left: -5%;
+margin-top: -5%;
+}
+
+.widget-blog-cover img {
+position: absolute;
+left: 0;
+top: 0;
+right: 0;
+bottom: 0;
+max-width: 100%;
+min-height: 100%;
+}
+
+.widget-blog-author {
+margin: -20px -20px 0;
+padding: 10px 20px;
+}
+
+.widget-blog-author-image {
+float: left;
+margin-top: -30px;
+padding: 5px;
+border-radius: 70px;
+width: 70px;
+height: 70px;
+background: #fff;
+position: relative;
+}
+
+.widget-blog-author-image img {
+max-width: 100%;
+border-radius: 70px;
+}
+
+.text-muted {
+color: #aab3ba;
+}
+.f-s-11 {
+font-size: 11px!important;
+}
+.m-0 {
+margin: 0!important;
+}
+
+.heart {
+  cursor: pointer;
+  height: 50px;
+  width: 50px;
+  background-image:url( 'https://abs.twimg.com/a/1446542199/img/t1/web_heart_animation.png');
+  background-position: left;
+  background-repeat:no-repeat;
+  background-size:2900%;
+}
+
+.heart:hover {
+  background-position:right;
+}
+
+.liked {
+  background-position:right;
+}
+
+.is_animating {
+  animation: heart-burst .8s steps(28) 1;
+}
+
+@keyframes heart-burst {
+  from {background-position:left;}
+  to { background-position:right;}
+}
+
+.inline p {
+  display:inline;
+}
+
+</style>
+
+
+
+
+<div class="container">
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Create Blog</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form class=""  method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="modal-body">
+                  <div class="input-group">
+                    <textarea class="form-control" name="content" aria-label="With textarea"></textarea>
+                  </div>
+                  <div class="input-group mt-1">
+                    <input accept="image/*" type="file" name="blogpic" value=""  id="imgInp">
+                  </div>
+                  <img id="blah" class="mt-1" src="#" style="display:none;width:100px;" />
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Post</button>
+              </div>
+          </form>
+
+        </div>
+      </div>
     </div>
-    <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-    <p class="article-content">{{ post.content }}</p>
-  </div>
-</article>
-{% endfor %}
+
+    <div class="row">
+        {% for blg in blogs %}
+        <div class="modal fade" id="editModal{{blg.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <form class="" action="{% url 'blog:editpost' blg.id %}"  method="post" enctype="multipart/form-data">
+                      {% csrf_token %}
+                      <div class="modal-body">
+                           <!-- <img id="blah" class="mt-1 ml-3 md-2" src="{{blg.image_url}}" width="90%"  /> -->
+                          <div class="input-group">
+                            <textarea class="form-control" name="editcontent" aria-label="With textarea" rows=7>{{blg.content}}</textarea>
+                          </div>
 
 
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Post</button>
+                      </div>
+                  </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="widget widget-blog mt-2 " style="background-color:#dedede">
+                <div class="widget-blog-cover">
+                    <img src="{{blg.image_url}}" alt="">
+                </div>
+                <div class="widget-blog-author">
+                    <div class="widget-blog-author-image">
+                        <img src="https://bootdey.com/img/Content/user_6.jpg" alt="">
+                    </div>
+                    <div class="widget-blog-author-info">
+                        <a href="{% url 'users:profile' blg.user.username %}"><h5 class="m-t-0 m-b-1">{{blg.user.username}}</h5></a>
+                        <p class="text-muted m-0 f-s-11">{{blg.created_on|date:"M j,Y h:i A"}}</p>
+
+                        {% if request.user in blg.likes.all %}
+                        <div class="inline">
+                            <p id="like{{blg.id}}" onclick="liked('{{blg.id}}');" style="color:#ff002b;"><i class="fas fa-heart" ></i></p>
+                            <p id="likecount{{blg.id}}">{{blg.likes.all.count}}</p>
+                        <input type="checkbox" id="isliked{{blg.id}}" name="" value="" checked hidden>
+                        {% else %}
+                        <div class="inline">
+                            <p id="like{{blg.id}}" onclick="liked('{{blg.id}}');"><i class="fas fa-heart" ></i></p>
+                            <p id="likecount{{blg.id}}">0</p>
+
+                        <input type="checkbox" id="isliked{{blg.id}}" name="" value="" hidden>
+                        {% endif %}
+                        <a href="#" class="ml-3" data-bs-toggle="modal" data-bs-target="#editModal{{blg.id}}"><i class="fas fa-edit"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="widget-blog-content">
+                    <p>
+                        {{blg.content}}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+
+
+
+    function liked(val){
+        let check = document.getElementById('isliked'+val).checked;
+        if (check){
+            document.getElementById('like'+val).style.color = "#211c1d";
+            document.getElementById('isliked'+val).checked = false;
+            document.getElementById('likecount'+val).innerText = parseInt(document.getElementById('likecount'+val).innerText)-1;
+        }
+        else{
+            document.getElementById('like'+val).style.color = "#ff002b";
+            document.getElementById('isliked'+val).checked = true;
+            document.getElementById('likecount'+val).innerText = parseInt(document.getElementById('likecount'+val).innerText)+1;
+        }
+
+        fetch('/liked?id='+val).then(res=>res.json());
+    }
+
+    imgInp.onchange = evt => {
+    const [file] = imgInp.files
+    if (file) {
+        blah.src = URL.createObjectURL(file);
+        document.getElementById('blah').style.display = 'block';
+    }
+    }
+</script>
 {% endblock content %}

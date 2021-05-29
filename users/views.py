@@ -1,103 +1,196 @@
-
 from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .forms import UserRegisterForm,UserForm,UserUpdateForm,ProfileUpdateForm
-import requests
-from django.conf import settings
-import json
-import urllib
-from .models import Profile
+
+# Create your views here.
+from .models import UserProfile
 from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.core.mail import EmailMessage
-from django.utils.encoding import force_bytes, force_text
-from .tokens import account_activation_token
-
-from django.http import HttpResponse
-from django.contrib.auth.models import User
 from django.contrib.auth import login,logout
+from django.contrib.auth.decorators import login_required
+from blog.s3 import s3_service
 
+from django.contrib.auth import authenticate
+from django.views.generic import View
 
-def activate(request, uidb64, token, backend='django.contrib.auth.backends.ModelBackend'):
+from cryptography.fernet import Fernet
+from djangoblogs.settings import FERNET_KEY
+from django.core.mail import EmailMessage
+from django.contrib.auth import login,logout
+from django.http import HttpResponse
+from django.contrib import messages
+import os
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+
+def encode(id):
+    FK = bytes(FERNET_KEY, 'utf-8')
+    fernet = Fernet(FK)
+    message = str(id)
+    encMessage = fernet.encrypt(message.encode())
+    encMessage = str(encMessage)
+    return encMessage[2:len(encMessage)-1]
+
+@login_required
+def user_logout(request):
+    logout(request)
+    return redirect('blog:home')
+
+from base64 import b64decode
+import face_recognition as fr
+
+def gen(n):
+    import string
+    import random
+    var2 = ""
+    for i in range(n):
+        var2 += random.choice(string.ascii_letters)
+    return var2
+
+import face_recognition as fr
+def compareFace(img1,img2):
+    known_image = fr.load_image_file("media/"+img1)
+    unknown_image = fr.load_image_file("media/"+img2)
     try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+        enc1  = fr.face_encodings(known_image)[0]
+        enc2 = fr.face_encodings(unknown_image)[0]
 
-    if user is not None and account_activation_token.check_token(user, token):
+        results = fr.compare_faces([enc1], enc2)
+        if results[0]:
+            return 200,True
+        else:
+            return 400,False
+    except:
+        return 500,False
+
+class Userlogin(View):
+    def post(self,request,*args,**kwargs):
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        print(password)
+        user=authenticate(email=email,password=password)
+        if user:
+            if request.POST.get("face_login")=="on":
+                code1 = gen(6)+'.png'
+                data1 = b64decode(user.user_profile.picdata)
+                with open("media/"+code1, "wb") as f:
+                    f.write(data1)
+                f.close()
+
+                logpic_data = request.POST.get("logpic")
+
+                header, encoded = logpic_data.split(",", 1)
+                data2 = b64decode(encoded)
+                code2 = gen(6)+'.png'
+
+                with open("media/"+code2, "wb") as a:
+                    a.write(data2)
+
+                status,res = compareFace(code1,code2)
+                os.remove("media/"+code1)
+                os.remove("media/"+code2)
+            else:
+                res = True
+            if res:
+                login(request,user)
+                print("logged in")
+                messages.success(request,"You have been logged in!")
+                return redirect("blog:home")
+
+            elif status == 400:
+                messages.warning(request,"Face not matched, Please Try Again")
+            else:
+                messages.warning(request,"Face not clear, Please Try Again")
+
+            # if os.path.exists("media/"+code2):
+            #     os.remove("media/"+code2)
+            # else:
+            #     print("The file does not exist")
+
+            return redirect("users:register")
+        else:
+            messages.warning(request,'Wrong input!')
+        return redirect("users:register")
+
+
+def profile(request,username):
+    user = User.objects.get(username=username)
+    profile = user.user_profile
+    # if request.method == "POST":
+
+    context = {}
+    context["profile"] = profile
+    return render(request,"users/profile.html",context)
+
+def activate(request,key):
+    print(key)
+    key = bytes(key, 'utf-8')
+    FK = bytes(FERNET_KEY, 'utf-8')
+    fernet = Fernet(FK)
+    id = fernet.decrypt(key).decode()
+    try:
+        user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        user = None
+    if user is not None:
         user.is_active = True
-        user.profile.email_confirmed = True
+        up = user.user_profile
+        up.emailconfirm = True
         user.save()
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        return redirect('blog-home')
+        up.save()
+        login(request, user)
+        messages.success(request,"Email confirmation done!")
+        return redirect('blog:home')
     else:
-        return render(request, 'account_activation_invalid.html')
+        return HttpResponse("<h2>Invalid Request</h2>")
 
 
 def register(request):
+    if request.user.is_authenticated:
+        return redirect("blog:home")
     if request.method == 'POST':
-        form = UserForm(data=request.POST)
-        profile_form=UserRegisterForm(data=request.POST)
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        username = email.split("@")[0]
+        user = User(first_name=first_name,last_name=last_name,username=username,email=email)
+        user.set_password(password)
+        user.save()
+        up = UserProfile(user=user)
+        if request.POST.get("regpic"):
+            regpic_data = request.POST.get("regpic")
+            header, encoded = regpic_data.split(",", 1)
+            print(type(encoded))
+            up.picdata = encoded
+        up.save()
 
-        if form.is_valid() and profile_form.is_valid():
-            recaptcha_response = request.POST.get('g-recaptcha-response')
-            data = {
-                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-                'response': recaptcha_response
-            }
-            r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
-            result = r.json()
-            print(result['success'])
-            if result['success']:
-                user=form.save()
-                user.is_active=False
-                user.save()
-                profile=profile_form.save(commit=False)
-                profile.user=user
-                if 'image' in request.FILES:
-                    profile.image=request.FILES['image']
-                profile.save()
-                current_site = get_current_site(request)
-                mail_subject = 'Activate your blog account.'
-                message = render_to_string('users/acc_active_email.html', {
-                    'user': user,
-                    'domain': current_site.domain,
-                    'uid':urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token':account_activation_token.make_token(user),
-                })
-                to_email = form.cleaned_data.get('email')
-                email = EmailMessage(
-                            mail_subject, message, to=[to_email]
-                )
-                email.send()
-                # username = form.cleaned_data.get('username')
-                return HttpResponse('Please confirm your email address to complete the registration')
+        mail_subject = 'Activate your blog account.'
+        message = "http://localhost:8000/auth/activate/"+encode(user.id)
+        email = EmailMessage(
+                    mail_subject, message, to=[email]
+        )
+        # email.send()
+        login(request,user)
+        messages.success(request,"Email confirmation has been sent. Please check it.")
+        return redirect("blog:home")
     else:
-        form = UserForm()
-        profile_form=UserRegisterForm()
-    return render(request, 'users/register.html', {'form': form,'profile_form':profile_form})
+        return render(request,"users/register.html")
 
 
-@login_required
-def profile(request):
-    current_site = get_current_site(request)
-    print(current_site)
-    if request.method=='POST':
-        u_form=UserUpdateForm(request.POST,instance=request.user)
-        p_form=ProfileUpdateForm(request.POST,request.FILES,instance=request.user.profile)
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
-
-            messages.success(request, f'Your account has been updated!')
-            return redirect('profile')
-    else:
-        profile=Profile.objects.get_or_create(user=request.user)
-
-        u_form=UserUpdateForm(instance=request.user)
-        p_form=ProfileUpdateForm(instance=request.user.profile)
-
-    return render(request, 'users/profile.html',{'u_form':u_form,'p_form':p_form})
+def follow(request):
+    if request.method=="GET":
+        try:
+            flw_id = request.GET.get("flw_id")
+            flw_user = User.objects.get(id=flw_id)
+            profile = request.user.user_profile
+            if flw_user in profile.follow.all():
+                profile.follow.remove(flw_user)
+                msg = f"You have un-followed {flw_user}"
+            else:
+                profile.follow.add(flw_user)
+                msg = f"You are following {flw_user}"
+            return JsonResponse({"msg":msg,"status":200},status=200)
+        except Exception as e:
+            return JsonResponse({"msg":"Some error occured","status":400})
