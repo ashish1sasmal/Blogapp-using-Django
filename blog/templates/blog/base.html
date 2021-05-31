@@ -47,7 +47,40 @@
                 </div>
             </ul>
         </nav>
+        <div class="modal fade" id="PostModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form class=""  method="post" action="{% url 'blog:home' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Write Blog</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
 
+                  <div class="form-group">
+                      <label class="sr-only" for="message">post</label>
+                      <textarea class="form-control" name="content" aria-label="With textarea"></textarea>
+                  </div>
+              <div class="form-group">
+
+                  <div class="custom-file">
+                      <input class="custom-file-input"  accept="image/*" type="file" name="blogpic" value=""  id="imgInp2">
+                      <label class="custom-file-label" for="customFile">Upload image</label>
+
+                  </div>
+                  <img id="blah2" class="mt-1" src="#" style="display:none;width:100px;" />
+              </div>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Share</button>
+              </div>
+               </form>
+            </div>
+          </div>
+        </div>
             <div id="layoutSidenav">
 
                 <div id="layoutSidenav_nav">
@@ -55,7 +88,7 @@
                         <div class="sb-sidenav-menu">
                             <div class="nav">
                                 <div class="sb-sidenav-menu-heading">Core</div>
-                                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" style="color:white;">
+                                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#PostModal" style="color:white;">
                                     <div class="sb-nav-link-icon"><i class="fas fa-feather-alt" style="color:white;"></i></div>
                                     Create Post
                                 </a>
@@ -141,7 +174,7 @@
                       {% endif %}
                       <div class="row">
                           {% if user.is_authenticated %}
-                          <div class="col-9">
+                          <div class="col-8">
                           {% else %}
                          <div class="col-12">
                          {% endif %}
@@ -150,7 +183,7 @@
                         {% endblock content %}
                     </div>
                     {% if user.is_authenticated %}
-                    <div class="col-3 mt-3">
+                    <div class="col-3 mt-3 mr-1">
                         <div class="card social-timeline-card">
                             <div class="card-body">
                                 {% suggest_friends request as sgfriends %}
@@ -160,7 +193,7 @@
                                     <li>
 
                                         <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                                            <img src="https://toppng.com/uploads/preview/batman-icon-jira-avatar-11562897771zvwv8r510z.png" alt="">
                                         </div>
                                         <div class="right">
                                             <a href="{% url 'users:profile' i.username %}">
@@ -196,6 +229,9 @@
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
         <script type="text/javascript">
+
+            document.getElementById("blogpic").value = "";
+
             $("#navsearch").autocomplete({
             source:'{% url 'blog:autocomplete' %}',
             focus: function( event, ui ) {
@@ -208,6 +244,14 @@
                   return false;
                }
         });
+
+        imgInp2.onchange = evt => {
+        const [file] = imgInp2.files
+        if (file) {
+            blah2.src = URL.createObjectURL(file);
+            document.getElementById('blah2').style.display = 'block';
+        }
+        }
         </script>
     </body>
 </html>
