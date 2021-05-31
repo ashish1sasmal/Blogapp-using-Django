@@ -10,6 +10,24 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+
+@login_required
+def autocomplete(request):
+    if request.is_ajax():
+        query = request.GET.get("term", "")
+        results = []
+        users = User.objects.filter(Q(username__icontains=query)|Q(first_name__icontains=query)|Q(last_name__icontains=query))
+        for user in users:
+            results.append({"label":f"{user.first_name} {user.last_name} {user.username}",
+                            "value":user.username
+                            })
+        if results==[]:
+            results.append({"label":"No Match Found","value":""})
+        return JsonResponse(results,safe=False)
+    elif request.method == "GET":
+        username = request.GET.get("mysearch")
+        return redirect('users:profile',username=username)
 
 
 def home(request):

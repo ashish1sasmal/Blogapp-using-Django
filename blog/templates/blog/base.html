@@ -21,24 +21,29 @@
             <a class="navbar-brand" href="{% url 'blog:home' %}">Secret Blogs</a>
             <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
             <!-- Navbar Search-->
-            <form class="d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-3 my-2 my-md-0">
+            <form class="d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-3 my-2 my-md-0" action="{% url 'blog:autocomplete' %}">
                 <div class="input-group">
-                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" />
+                    <input class="form-control" name="navsearch" id="navsearch" type="text" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2"  required/>
+                    <input type="hidden" name="mysearch" id="mysearch" value="" required>
                     <div class="input-group-append">
-                        <button class="btn btn-primary" type="button"><i class="fas fa-search"></i></button>
+                        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
                     </div>
                 </div>
             </form>
             <!-- Navbar-->
             <ul class="navbar-nav ml-auto ml-md-0">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
-                </li>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                    <a class="dropdown-item" href="#">Settings</a>
-                    <a class="dropdown-item" href="#">Activity Log</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="login.html">Logout</a>
+
+                <div class="dropdown  dropleft">
+                    <a class="nav-link dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      {% if user.is_authenticated %}
+                    <a class="dropdown-item" href="{% url 'users:profile' user.username %}">Profile</a>
+                    <a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a>
+                    {% else %}
+                    <a class="dropdown-item" href="{% url 'users:register' %}"><i class="fas fa-sign-in-alt mr-2"></i> Login</a>
+                    <a class="dropdown-item" href="{% url 'users:register' %}"><i class="fas fa-user-plus mr-2"></i> Register</a>
+                    {% endif %}
+                  </div>
                 </div>
             </ul>
         </nav>
@@ -50,11 +55,11 @@
                         <div class="sb-sidenav-menu">
                             <div class="nav">
                                 <div class="sb-sidenav-menu-heading">Core</div>
-                                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" style="color:white;">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-feather-alt" style="color:white;"></i></div>
                                     Create Post
                                 </a>
-                                <div class="sb-sidenav-menu-heading">Interface</div>
+                                <!-- <div class="sb-sidenav-menu-heading">Interface</div>
                                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                                     <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                                     Layouts
@@ -96,24 +101,24 @@
                                             </nav>
                                         </div>
                                     </nav>
-                                </div>
-                                <div class="sb-sidenav-menu-heading">Addons</div>
+                                </div> -->
+                                <div class="sb-sidenav-menu-heading">Join Us</div>
                                 {% if user.is_authenticated %}
-                                <a class="nav-link" href="{% url 'users:profile' user.username %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                <a class="nav-link" href="{% url 'users:profile' user.username %}"  style="color:white;">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user"  style="color:white;"></i></div>
                                     Profile
                                 </a>
-                                <a class="nav-link" href="{% url 'users:logout' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                <a class="nav-link" href="{% url 'users:logout' %}"  style="color:white;">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-sign-out-alt" style="color:white;"></i></div>
                                     Logout
                                 </a>
                                 {% else %}
                                 <a class="nav-link" href="{% url 'users:register' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                    <div class="sb-nav-link-icon"><i class="fas fa-sign-in-alt" style="color:white;"></i></div>
                                     Login
                                 </a>
                                 <a class="nav-link" href="{% url 'users:register' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user-plus"></i></div>
                                     Register
                                 </a>
                                 {% endif %}
@@ -145,93 +150,28 @@
                         {% endblock content %}
                     </div>
                     {% if user.is_authenticated %}
-                    <div class="col-3">
+                    <div class="col-3 mt-3">
                         <div class="card social-timeline-card">
                             <div class="card-body">
-                                {% suggest_friends request %}
+                                {% suggest_friends request as sgfriends %}
                                 <h5 class="card-title">People you may know</h5>
                                 <ul class="friend-list">
+                                    {% for i in sgfriends %}
                                     <li>
+
                                         <div class="left">
                                             <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="">
                                         </div>
                                         <div class="right">
-                                            <h3>John Doe</h3>
+                                            <a href="{% url 'users:profile' i.username %}">
+                                                <h3>{{i.first_name}} {{i.last_name}}</h3>
+                                            </a>
+
                                             <p>10 Friends</p>
                                         </div>
                                     </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar4.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar5.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar4.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="left">
-                                            <img src="https://bootdey.com/img/Content/avatar/avatar6.png" alt="">
-                                        </div>
-                                        <div class="right">
-                                            <h3>John Doe</h3>
-                                            <p>10 Friends</p>
-                                        </div>
-                                    </li>
+                                    {% endfor %}
+
                                 </ul>
                             </div>
                         </div>
@@ -251,5 +191,23 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 
+
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+        <script type="text/javascript">
+            $("#navsearch").autocomplete({
+            source:'{% url 'blog:autocomplete' %}',
+            focus: function( event, ui ) {
+                  $( "#navsearch" ).val( ui.item.label );
+                     return false;
+               },
+               select: function( event, ui ) {
+                  $( "#navsearch" ).val( ui.item.label );
+                  $( "#mysearch" ).val( ui.item.value );
+                  return false;
+               }
+        });
+        </script>
     </body>
 </html>

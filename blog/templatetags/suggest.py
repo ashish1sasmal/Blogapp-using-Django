@@ -10,12 +10,11 @@ def suggest_friends(request):
     user = request.user
     sg = {}
     for i in user.user_profile.follow.all():
-        if sg.get(i,None)==None:
-            sg[i] = 0
-            for j in i.user_profile.follow.all():
-                if sg.get(j,None)==None:
+        for j in i.user_profile.follow.all():
+            if not user.user_profile.follow.filter(id=j.id).exists():
+                if sg.get(j,None)==None :
                     sg[j] = 0
                 sg[j]+=1
-        sg[i]+=1
+
     sglist = sorted(list(sg.keys()),key=lambda x:sg[x], reverse=True)[:10]
     return sglist
