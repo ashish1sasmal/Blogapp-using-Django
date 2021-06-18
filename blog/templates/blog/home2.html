@@ -29,7 +29,6 @@
 </style>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
 <main>
-    <div class="container" >
         <div class="row">
             <div class="col-md-12">
                 <div class="top-breadcrumb">
@@ -169,7 +168,7 @@
                         <input type="checkbox" id="isliked{{blg.id}}" name="" value="" hidden>
 
                         {% endif %}
-                        <a href="#" class="card-link" role="button" onclick="showcomments('{{blg.id}}');"><i class="fa fa-comment"></i> Comment</a>
+                        <a role="button" class="card-link" role="button" onclick="showcomments('{{blg.id}}');"><i class="fa fa-comment"></i> Comment</a>
                         <input type="checkbox" id="iscomment{{blg.id}}" name="" value="" hidden>
                         <a href="#" class="card-link"><i class="fa fa-mail-forward"></i> Share</a>
                         </div>
@@ -185,14 +184,14 @@
                                         </div>
                                         <div class="panel-body">
                                             <form id="comm{{blg.id}}">
-                                                <textarea class="form-control" id="comment{{blg.id}}" placeholder="write a comment..." rows="3"></textarea>
+                                                <textarea class="form-control" id="comment{{blg.id}}" placeholder="write a comment..." rows="2"></textarea>
                                                 <br>
                                                 <button type="button" class="btn btn-info pull-right" onclick="comment('{{blg.id}}');">Post</button>
                                             </form>
 
                                             <div class="clearfix"></div>
                                             <hr>
-                                            <ul class="media-list" id="comments">
+                                            <ul class="media-list" id="comments_{{blg.id}}">
                                                 {% for cm in blg.blog_comment.all %}
                                                 <li class="media">
                                                     <a href="#" class="pull-left">
@@ -220,7 +219,6 @@
             </div>
 
         </div>
-    </div>
 </main>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <!-- <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script> -->
@@ -255,7 +253,7 @@
         })
         .then(response => response.json())
         .then(json => {
-            document.getElementById('comments').innerHTML =
+            document.getElementById('comments_'+val).innerHTML =
             `
             <li class="media">
                 <a href="#" class="pull-left">
@@ -271,7 +269,7 @@
                     </p>
                 </div>
             </li>
-            ` +document.getElementById('comments').innerHTML;
+            ` +document.getElementById('comments_'+val).innerHTML;
         });
 
     }
