@@ -8,4 +8,5 @@ urlpatterns = [
     path('editpost/<int:id>/',views.editPost,name="editpost"),
     path('comment/<int:id>/',views.CommentCBV.as_view(),name="comment"),
     path('search/',views.autocomplete, name='autocomplete'),
+    path('deletepost/',views.deletePost,name="deletePost")
 ]

@@ -16,7 +16,7 @@ from django.views.generic import View
 
 from cryptography.fernet import Fernet
 from djangoblogs.settings import FERNET_KEY
-from django.core.mail import EmailMessage
+from .email import emailSend
 from django.contrib.auth import login,logout
 from django.http import HttpResponse
 from django.contrib import messages
@@ -145,6 +145,17 @@ def activate(request,key):
     else:
         return HttpResponse("<h2>Invalid Request</h2>")
 
+def emailconfirm(user):
+    mail_subject = 'Activate your blog account.'
+    message = f"{os.environ.get('HOST')}/auth/activate/"+encode(user.id)
+    email = emailSend(
+                mail_subject, message, [user.email]
+    )
+    print("after email")
+
+def emailconfirmresend(request):
+    emailconfirm(request.user)
+    return JsonResponse({"status":200})
 
 def register(request):
     if request.user.is_authenticated:
@@ -153,28 +164,28 @@ def register(request):
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         email = request.POST.get("email")
-        password = request.POST.get("password")
-        username = email.split("@")[0]
-        user = User(first_name=first_name,last_name=last_name,username=username,email=email)
-        user.set_password(password)
-        user.save()
-        up = UserProfile(user=user)
-        if request.POST.get("regpic"):
-            regpic_data = request.POST.get("regpic")
-            header, encoded = regpic_data.split(",", 1)
-            print(type(encoded))
-            up.picdata = encoded
-        up.save()
-
-        mail_subject = 'Activate your blog account.'
-        message = "http://localhost:8000/auth/activate/"+encode(user.id)
-        email = EmailMessage(
-                    mail_subject, message, to=[email]
-        )
-        # email.send()
-        login(request,user)
-        messages.success(request,"Email confirmation has been sent. Please check it.")
-        return redirect("blog:home")
+        user_count = User.objects.filter(email=email).count()
+        if user_count==0:
+            password = request.POST.get("password")
+            username = email.split("@")[0]+"_"+gen(6)
+            user = User(first_name=first_name,last_name=last_name,username=username,email=email)
+            user.set_password(password)
+            user.save()
+            up = UserProfile(user=user)
+            if request.POST.get("regpic"):
+                regpic_data = request.POST.get("regpic")
+                header, encoded = regpic_data.split(",", 1)
+                print(type(encoded))
+                up.picdata = encoded
+            up.save()
+            emailconfirm(user, email)
+            # email.send()
+            login(request,user)
+            messages.success(request,"Email confirmation has been sent. Please check it.")
+            return redirect("blog:home")
+        else:
+            messages.warning(request, "User already exist with this email id.")
+            return redirect("users:register")
     else:
         return render(request,"users/register.html")
 

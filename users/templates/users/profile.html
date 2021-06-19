@@ -75,7 +75,7 @@
                   {% else %}
                   <div class="alert alert-warning mt-3">
                     Your email is not confirmed. Please check your inbox.<br>
-                    <a href="javascript:void(0)">Resend confirmation</a>
+                    <a href="javascript:void(0)" onclick="emailconfirm();">Resend confirmation</a>
                   </div>
                   {% endif %}
                   {% endif %}
@@ -310,6 +310,9 @@
         document.getElementById("user_website").readOnly = true;
         document.getElementById("user_phone").readOnly = true;
 
+
+
+
         function follow(val){
 
             fetch('{% url 'users:follow' %}?flw_id={{profile.user.id}}').then(res=>res.json()).then(json => {
@@ -330,5 +333,15 @@
             });
         }
       {% endif %}
+      function emailconfirm(){
+          fetch('/auth/emailconfirm').then(res=>res.json()).then(data=>{
+              if (data.status==200){
+                  alert("Email confirmation send. Please verify.")
+              }
+              else{
+                  alert("Some error occured. Please try again.");
+              }
+          });
+      }
   </script>
 {% endblock content %}

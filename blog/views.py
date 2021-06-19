@@ -83,3 +83,13 @@ def editPost(request,id):
     blg.save()
     messages.success(request,"Post edited successfully.")
     return redirect("blog:home")
+
+@login_required
+def deletePost(request):
+    blgid = request.GET.get("id")
+    try:
+        Blog.objects.get(id=int(blgid)).delete()
+        return JsonResponse({"status":200})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"status":500})

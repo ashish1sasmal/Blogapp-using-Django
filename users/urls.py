@@ -9,4 +9,5 @@ urlpatterns = [
     path('logout/',views.user_logout,name='logout'),
     path('login/',views.Userlogin.as_view(),name='login'),
     path('follow/',views.follow,name='follow'),
+    path('emailconfirm/',views.emailconfirmresend,name="emailconfirm")
 ]
