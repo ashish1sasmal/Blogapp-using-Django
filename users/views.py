@@ -175,7 +175,7 @@ def forgotPassword(request):
             message =f'''
             Hey! Use this Link to set new password.
             Link : {os.environ.get("HOST")}/auth/match/qs/{encode(user.id)}
-            This will expire in 120 seconds.
+            This will expire in 5 minutes.
 
             Thank You
             '''
