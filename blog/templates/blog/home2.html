@@ -135,7 +135,7 @@
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="gedf-drop1">
                                         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{blg.id}}"><i class="far fa-edit"></i> Edit</a>
                                         {% if request.user == blg.user %}
-                                        <a class="dropdown-item" href="#" onclick="deletePost({{blg.id}});"><i class="far fa-edit"></i> Delete</a>
+                                        <a class="dropdown-item" href="#" onclick="deletePost({{blg.id}});"><i class="fas fa-trash"></i> Delete</a>
                                         {% endif %}
                                     </div>
                                 </div>
