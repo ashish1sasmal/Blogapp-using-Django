@@ -49,15 +49,21 @@ def home(request):
 
 @login_required
 def like(request):
-    id = request.GET.get("id")
-    blg = Blog.objects.get(id=id)
-    if request.user in blg.likes.all():
-        print(request.user,"removed")
-        blg.likes.remove(request.user)
-    else:
-        print(request.user,"added")
-        blg.likes.add(request.user)
-    return JsonResponse({"msg":"Liked"},status=200)
+    if request.method == "POST":
+        try:
+            id = request.POST.get("id")
+            print(id)
+            blg = Blog.objects.get(id=id)
+            if request.user in blg.likes.all():
+                print(request.user,"removed")
+                blg.likes.remove(request.user)
+            else:
+                print(request.user,"added")
+                blg.likes.add(request.user)
+            return JsonResponse({"status":200},status=200)
+        except Exception as e:
+            print(e)
+            return JsonResponse({"status":500},status=500)
 
 from rest_framework import mixins
 from rest_framework import generics

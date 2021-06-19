@@ -225,7 +225,7 @@
 <script type="text/javascript">
     const csrf = document.getElementsByName("csrfmiddlewaretoken")[0].value
 
-    
+
     function showcomments(val){
         let check = document.getElementById('iscomment'+val).checked;
         if (check){
@@ -274,20 +274,34 @@
         });
 
     }
-    function liked(val){
-        let check = document.getElementById('isliked'+val).checked;
-        if (check){
-            document.getElementById('like'+val).style.color = "#211c1d";
-            document.getElementById('isliked'+val).checked = false;
-            document.getElementById('likecount'+val).innerText = parseInt(document.getElementById('likecount'+val).innerText)-1;
-        }
-        else{
-            document.getElementById('like'+val).style.color = "#ff002b";
-            document.getElementById('isliked'+val).checked = true;
-            document.getElementById('likecount'+val).innerText = parseInt(document.getElementById('likecount'+val).innerText)+1;
-        }
 
-        fetch('/liked?id='+val).then(res=>res.json());
+    function liked(val){
+        const formData = new FormData();
+         formData.append('id', val);
+         const otherPram={
+             body:formData,
+             method:"POST",
+             headers: {
+                 "X-CSRFToken": csrf
+             },
+             mode: "same-origin",
+         };
+         fetch('/liked/', otherPram).then(res=>res.json())
+         .then(data=>{
+             if (data.status==200){
+                 let check = document.getElementById('isliked'+val).checked;
+                 if (check){
+                     document.getElementById('like'+val).style.color = "#211c1d";
+                     document.getElementById('isliked'+val).checked = false;
+                     document.getElementById('likecount'+val).innerText = parseInt(document.getElementById('likecount'+val).innerText)-1;
+                 }
+                 else{
+                     document.getElementById('like'+val).style.color = "#ff002b";
+                     document.getElementById('isliked'+val).checked = true;
+                     document.getElementById('likecount'+val).innerText = parseInt(document.getElementById('likecount'+val).innerText)+1;
+                 }
+             }
+         });
     }
 
     function deletePost(val){
