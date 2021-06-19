@@ -181,7 +181,8 @@ def forgotPassword(request):
             '''
             emailSend("Password Recovery for Blog Account", message, [user.email])
             cache.set(user.username, user.username, 60*5)
-            return JsonResponse({"status":200},status=200)
+            messages.success(request,"Password reset mail sent.")
+            return redirect("blog:home")
     else:
         return JsonResponse({"status":404},status=404)
 
@@ -200,7 +201,7 @@ def match(request,qs):
                     return render(request, "users/forgot.html")
                 else:
                     if request.POST.get("inputPassword")==request.POST.get("inputPassword2"):
-                        user.password = request.POST.get("inputPassword")
+                        user.set_password(request.POST.get("inputPassword"))
                         user.save()
                         cache.delete(user.username)
                         messages.success(request,"Password changed successfully")

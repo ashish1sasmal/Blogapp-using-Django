@@ -73,7 +73,7 @@ input:checked + .slider:before {
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form class="needs-validation" novalidate>
+      <form class="needs-validation" novalidate action="{% url 'users:forgotPassword' %}">
       <div class="modal-body">
 
           <div class="col-md-12" id="forgotPasswordemaildiv">
@@ -104,7 +104,7 @@ input:checked + .slider:before {
 </ul>
 <div class="tab-content" id="pills-tabContent">
   <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-      <form class="needs-validation" onsubmit="return loginsubmit()" action="{% url 'users:login' %}" novalidate="" method="POST">
+      <form class="needs-validation" id="login-valid" onsubmit="return loginsubmit()" action="{% url 'users:login' %}" novalidate="" method="POST">
           {% csrf_token %}
       <div class="row">
 
@@ -338,7 +338,7 @@ input:checked + .slider:before {
   'use strict'
 
       // Fetch all the forms we want to apply custom Bootstrap validation styles to
-      var forms = document.querySelectorAll('.needs-validation')
+      var forms = document.getElementById('login-valid');
 
       // Loop over them and prevent submission
       Array.prototype.slice.call(forms)
@@ -348,22 +348,7 @@ input:checked + .slider:before {
               event.preventDefault()
               event.stopPropagation()
             }
-            event.preventDefault()
-            event.stopPropagation()
             form.classList.add('was-validated')
-            let email = document.getElementById("forgotPasswordemail").value;
-            fetch('{% url 'users:forgotPassword' %}?email='+email).then(res=>res.json()).then(data=>{
-                if (data.status==200){
-                    alert("Password Recovery email is sent.");
-                }
-                else if (data.status==404){
-                    alert("No such user found.");
-                }
-                else{
-                    alert("Some error occured. Please try again.");
-                }
-            });
-
 
           }, false)
         })
