@@ -40,7 +40,7 @@ def home(request):
             messages.success(request,"Post uploaded successfully")
             return redirect("blog:home")
         else:
-            allblogs = Blog.objects.all()
+            allblogs = Blog.objects.all().order_by('-created_on')
             content =  {}
             content["blogs"] = allblogs
             return render(request,"blog/home2.html",content)

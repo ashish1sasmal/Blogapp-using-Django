@@ -133,9 +133,6 @@
                                         <i class="fa fa-ellipsis-h"></i>
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="gedf-drop1">
-                                        <div class="h6 dropdown-header">Configuration</div>
-                                        <a class="dropdown-item" href="#">Save</a>
-                                        <a class="dropdown-item" href="#">Hide</a>
                                         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{blg.id}}">Edit</a>
                                     </div>
                                 </div>
@@ -168,9 +165,9 @@
                         <input type="checkbox" id="isliked{{blg.id}}" name="" value="" hidden>
 
                         {% endif %}
-                        <a role="button" class="card-link" role="button" onclick="showcomments('{{blg.id}}');"><i class="fa fa-comment"></i> Comment</a>
+                        <a role="button" class="card-link" role="button" onclick="showcomments('{{blg.id}}');" style="margin-left:5px;"><i class="fa fa-comment"></i> Comment</a>
                         <input type="checkbox" id="iscomment{{blg.id}}" name="" value="" hidden>
-                        <a href="#" class="card-link"><i class="fa fa-mail-forward"></i> Share</a>
+                        <!-- <a href="#" class="card-link"><i class="fas fa-share-alt"></i> Share</a> -->
                         </div>
 
                     </div>
