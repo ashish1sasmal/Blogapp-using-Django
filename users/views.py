@@ -24,6 +24,10 @@ import os
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 
+from django.core.cache import cache
+import string
+import random
+
 def encode(id):
     FK = bytes(FERNET_KEY, 'utf-8')
     fernet = Fernet(FK)
@@ -41,12 +45,17 @@ from base64 import b64decode
 import face_recognition as fr
 
 def gen(n):
-    import string
-    import random
+
     var2 = ""
     for i in range(n):
         var2 += random.choice(string.ascii_letters)
     return var2
+
+def genDigit(n):
+    string = ""
+    for i in range(n):
+        string+=str(chr(random.randint(48,57)))
+    return string
 
 import face_recognition as fr
 def compareFace(img1,img2):
@@ -144,6 +153,70 @@ def activate(request,key):
         return redirect('blog:home')
     else:
         return HttpResponse("<h2>Invalid Request</h2>")
+
+
+def forgotPassword(request):
+    email = request.GET.get("email")
+    user = User.objects.filter(email=email)
+    print(user)
+    if user.exists():
+        user = user.first()
+        if request.method == "POST":
+            otp = request.POST.get("otp")
+            otp2 = cache.get(user.username, None)
+            if otp2 ==None:
+                return JsonResponse({"status":408},status=408)  # OTP expired
+            elif otp==otp2:
+                cache.delete(user.username)
+                return JsonResponse({"status":200}, status=200) # OTP matched
+            else:
+                return JsonResponse({"status":400},status=400)  # OTP failed
+        else:
+            message =f'''
+            Hey! Use this Link to set new password.
+            Link : {os.environ.get("HOST")}/auth/match/qs/{encode(user.id)}
+            This will expire in 120 seconds.
+
+            Thank You
+            '''
+            emailSend("Password Recovery for Blog Account", message, [user.email])
+            cache.set(user.username, user.username, 60*5)
+            return JsonResponse({"status":200},status=200)
+    else:
+        return JsonResponse({"status":404},status=404)
+
+def match(request,qs):
+    otp = qs
+    if otp:
+        key = bytes(otp, 'utf-8')
+        FK = bytes(FERNET_KEY, 'utf-8')
+        fernet = Fernet(FK)
+        id = fernet.decrypt(key).decode()
+        user = User.objects.filter(id=int(id))
+        if user.exists():
+            user = user.first()
+            if cache.get(user.username, None):
+                if request.method=="GET":
+                    return render(request, "users/forgot.html")
+                else:
+                    if request.POST.get("inputPassword")==request.POST.get("inputPassword2"):
+                        user.password = request.POST.get("inputPassword")
+                        user.save()
+                        cache.delete(user.username)
+                        messages.success(request,"Password changed successfully")
+                        return redirect("blog:home")
+                    else:
+                        messages.warning(request,"Passwords did not matched")
+                        return render(request, "users/forgot.html")
+            else:
+                return HttpResponse("Link Expired")
+        else:
+            return HttpResponse("User doesn't exists.")
+
+
+
+
+
 
 def emailconfirm(user):
     mail_subject = 'Activate your blog account.'
