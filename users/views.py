@@ -156,22 +156,12 @@ def activate(request,key):
 
 
 def forgotPassword(request):
-    email = request.GET.get("email")
-    user = User.objects.filter(email=email)
-    print(user)
-    if user.exists():
-        user = user.first()
-        if request.method == "POST":
-            otp = request.POST.get("otp")
-            otp2 = cache.get(user.username, None)
-            if otp2 ==None:
-                return JsonResponse({"status":408},status=408)  # OTP expired
-            elif otp==otp2:
-                cache.delete(user.username)
-                return JsonResponse({"status":200}, status=200) # OTP matched
-            else:
-                return JsonResponse({"status":400},status=400)  # OTP failed
-        else:
+    if request.method=="POST":
+        email = request.POST.get("email")
+        user = User.objects.filter(email=email)
+        print(user)
+        if user.exists():
+            user = user.first()
             message =f'''
             Hey! Use this Link to set new password.
             Link : {os.environ.get("HOST")}/auth/match/qs/{encode(user.id)}
@@ -183,8 +173,8 @@ def forgotPassword(request):
             cache.set(user.username, user.username, 60*5)
             messages.success(request,"Password reset mail sent.")
             return redirect("blog:home")
-    else:
-        return JsonResponse({"status":404},status=404)
+        else:
+            return JsonResponse({"status":404},status=404)
 
 def match(request,qs):
     otp = qs

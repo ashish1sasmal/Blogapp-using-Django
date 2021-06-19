@@ -73,7 +73,7 @@ input:checked + .slider:before {
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form class="needs-validation" novalidate action="{% url 'users:forgotPassword' %}">
+      <form class="needs-validation" method="POST" novalidate action="{% url 'users:forgotPassword' %}">
       <div class="modal-body">
 
           <div class="col-md-12" id="forgotPasswordemaildiv">
