@@ -196,6 +196,7 @@ def match(request,qs):
         user = User.objects.filter(id=int(id))
         if user.exists():
             user = user.first()
+            return HttpResponse(cache.get(user.username, None)+user.username)
             if cache.get(user.username, None):
                 if request.method=="GET":
                     return render(request, "users/forgot.html")
