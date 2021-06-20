@@ -11,6 +11,7 @@ User = get_user_model()
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 @login_required
 def autocomplete(request):
@@ -29,6 +30,11 @@ def autocomplete(request):
         username = request.GET.get("mysearch")
         return redirect('users:profile',username=username)
 
+def blogPagination(page=1):
+    blgs = Blog.objects.all().order_by('-created_on')
+    paginator = Paginator(blgs, 5) # Show 10 blogs per page.
+    page_obj = paginator.get_page(page)
+    return page_obj
 
 def home(request):
     if request.user.is_authenticated:
@@ -40,8 +46,14 @@ def home(request):
             messages.success(request,"Post uploaded successfully")
             return redirect("blog:home")
         else:
-            allblogs = Blog.objects.all().order_by('-created_on')
+            page = request.GET.get("page",1)
+            allblogs = blogPagination(page)
             content =  {}
+            content["blgdetails"] = {
+                "has_prev" : allblogs.has_previous(),
+                "has_next" : allblogs.has_next()
+            }
+
             content["blogs"] = allblogs
             return render(request,"blog/home2.html",content)
     else:

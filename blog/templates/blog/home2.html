@@ -216,9 +216,32 @@
                         </div>
                 </div>
                 {% endfor %}
-            </div>
+                <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups" style="margin-bottom:10px;">
+                  <!-- <div class="btn-group me-2" role="group" aria-label="First group">
+                    <button role="button" class="btn btn-primary">1</button>
+                    <button role="button" class="btn btn-primary">2</button>
+                    <button role="button" class="btn btn-primary">3</button>
+                    <button role="button" class="btn btn-primary">4</button>
+                  </div> -->
+                  <div class="btn-group me-2" role="group" aria-label="First group">
+                      {% if blgdetails.has_prev %}
+                    <a role="button" class="btn btn-primary" href="?page={{ blogs.previous_page_number }}">Previous </a>
+                    {% else %}
+                    <a role="button" class="btn btn-primary">Previous</a>
+                    {% endif %}
+                  </div>
 
-        </div>
+                  <div class="btn-group me-2" role="group" aria-label="Second group">
+                      {% if blgdetails.has_next %}
+                    <a role="button" class="btn btn-primary" href="?page={{ blogs.next_page_number }}">Next</a>
+                    {% else %}
+                    <a role="button" class="btn btn-primary">Next</a>
+                    {% endif %}
+                  </div>
+                  <!-- <div class="btn-group" role="group" aria-label="Third group">
+                    <button role="button" class="btn btn-info">8</button>
+                  </div> -->
+                </div>
 </main>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <!-- <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script> -->

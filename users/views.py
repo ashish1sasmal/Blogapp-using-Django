@@ -178,32 +178,31 @@ def forgotPassword(request):
 
 def match(request,qs):
     otp = qs
-    if otp:
-        key = bytes(otp, 'utf-8')
-        FK = bytes(FERNET_KEY, 'utf-8')
-        fernet = Fernet(FK)
-        id = fernet.decrypt(key).decode()
-        user = User.objects.filter(id=int(id))
-        if user.exists():
-            user = user.first()
-            return HttpResponse(cache.get(user.username, None)+user.username)
-            if cache.get(user.username, None):
-                if request.method=="GET":
-                    return render(request, "users/forgot.html")
-                else:
-                    if request.POST.get("inputPassword")==request.POST.get("inputPassword2"):
-                        user.set_password(request.POST.get("inputPassword"))
-                        user.save()
-                        cache.delete(user.username)
-                        messages.success(request,"Password changed successfully")
-                        return redirect("blog:home")
-                    else:
-                        messages.warning(request,"Passwords did not matched")
-                        return render(request, "users/forgot.html")
+    key = bytes(otp, 'utf-8')
+    FK = bytes(FERNET_KEY, 'utf-8')
+    fernet = Fernet(FK)
+    id = fernet.decrypt(key).decode()
+    user = User.objects.filter(id=int(id))
+    if user.exists():
+        user = user.first()
+        if cache.get(user.username, None):
+            if request.method=="GET":
+                print("Hererrr")
+                return render(request, "users/forgot.html")
             else:
-                return HttpResponse("Link Expired")
+                if request.POST.get("inputPassword")==request.POST.get("inputPassword2"):
+                    user.set_password(request.POST.get("inputPassword"))
+                    user.save()
+                    cache.delete(user.username)
+                    messages.success(request,"Password changed successfully")
+                    return redirect("blog:home")
+                else:
+                    messages.warning(request,"Passwords did not matched")
+                    return redirect("users:forgotPasswordMatch")
         else:
-            return HttpResponse("User doesn't exists.")
+            return HttpResponse("Link Expired")
+    else:
+        return HttpResponse("User doesn't exists.")
 
 
 

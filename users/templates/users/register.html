@@ -74,6 +74,7 @@ input:checked + .slider:before {
         </button>
       </div>
       <form class="needs-validation" method="POST" novalidate action="{% url 'users:forgotPassword' %}">
+          {% csrf_token %}
       <div class="modal-body">
 
           <div class="col-md-12" id="forgotPasswordemaildiv">
@@ -284,7 +285,8 @@ input:checked + .slider:before {
         const canvas2 = document.getElementById('canvas2');
         const context2 = canvas2.getContext('2d');
          const captureButton2 = document.getElementById('login_camera_capture_button');
-
+         document.getElementById("login_camera_close_button").style.display = "block";
+         player2.style.display = "block";
         constraints = {
           video: true,
         };
@@ -292,6 +294,7 @@ input:checked + .slider:before {
         captureButton2.addEventListener('click', () => {
           // Draw the video frame to the canvas.
           context2.drawImage(player2, 0, 0, canvas2.width, canvas2.height);
+          player2.srcObject.getVideoTracks().forEach(track => track.stop());
         });
 
         // Attach the video stream to the video element and autoplay.
@@ -311,9 +314,11 @@ input:checked + .slider:before {
 
 
     function closecap2(){
-        player2.style.display = "none";
+
         player2.srcObject.getVideoTracks().forEach(track => track.stop());
+        player2.style.display = "none";
         document.getElementById("login_camera_close_button").style.display = "none";
+        document.getElementById("login_camera_button").style.display = "block";
 
     }
 
