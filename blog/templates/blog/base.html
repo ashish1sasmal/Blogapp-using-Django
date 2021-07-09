@@ -41,8 +41,8 @@
                     <a class="dropdown-item" href="{% url 'users:profile' user.username %}">Profile</a>
                     <a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a>
                     {% else %}
-                    <a class="dropdown-item" href="{% url 'users:register' %}"><i class="fas fa-sign-in-alt mr-2"></i> Login</a>
-                    <a class="dropdown-item" href="{% url 'users:register' %}"><i class="fas fa-user-plus mr-2"></i> Register</a>
+                    <a class="dropdown-item" href="{% url 'users:register' %}?action=login"><i class="fas fa-sign-in-alt mr-2"></i> Login</a>
+                    <a class="dropdown-item" href="{% url 'users:register' %}?action=register"><i class="fas fa-user-plus mr-2"></i> Register</a>
                     {% endif %}
                   </div>
                 </div>
@@ -147,11 +147,11 @@
                                     Logout
                                 </a>
                                 {% else %}
-                                <a class="nav-link" href="{% url 'users:register' %}">
+                                <a class="nav-link" href="{% url 'users:register' %}?action=login">
                                     <div class="sb-nav-link-icon"><i class="fas fa-sign-in-alt" style="color:white;"></i></div>
                                     Login
                                 </a>
-                                <a class="nav-link" href="{% url 'users:register' %}">
+                                <a class="nav-link" href="{% url 'users:register' %}?action=register">
                                     <div class="sb-nav-link-icon"><i class="fas fa-user-plus"></i></div>
                                     Register
                                 </a>

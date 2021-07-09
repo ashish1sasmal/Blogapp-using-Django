@@ -79,6 +79,12 @@ AUTHENTICATION_BACKENDS = ['users.auth.EmailBackend']
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

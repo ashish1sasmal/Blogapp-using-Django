@@ -251,7 +251,8 @@ def register(request):
             messages.warning(request, "User already exist with this email id.")
             return redirect("users:register")
     else:
-        return render(request,"users/register.html")
+        action = request.GET.get("action","login")
+        return render(request,"users/register.html",{"action":action})
 
 
 def follow(request):
